@@ -1,0 +1,15 @@
+<svg width="600" height="400" viewBox="0 0 600 400" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="600" height="400" fill="#E5E7EB" />
+  <rect width="600" height="400" fill="url(#paint0_linear)" />
+  <path d="M300 180C288.954 180 280 188.954 280 200C280 211.046 288.954 220 300 220C311.046 220 320 211.046 320 200C320 188.954 311.046 180 300 180ZM300 213.333C292.648 213.333 286.667 207.352 286.667 200C286.667 192.648 292.648 186.667 300 186.667C307.352 186.667 313.333 192.648 313.333 200C313.333 207.352 307.352 213.333 300 213.333Z" fill="#6B7280"/>
+  <path d="M233.333 173.333C244.379 173.333 253.333 164.379 253.333 153.333C253.333 142.287 244.379 133.333 233.333 133.333C222.288 133.333 213.333 142.287 213.333 153.333C213.333 164.379 222.288 173.333 233.333 173.333Z" fill="#6B7280"/>
+  <path fill-rule="evenodd" clip-rule="evenodd" d="M213.333 240L266.667 186.667L320 240L373.333 186.667L426.667 240V266.667H213.333V240Z" fill="#6B7280"/>
+  <path d="M186.667 120H413.333C422.538 120 430 127.462 430 136.667V263.333C430 272.538 422.538 280 413.333 280H186.667C177.462 280 170 272.538 170 263.333V136.667C170 127.462 177.462 120 186.667 120Z" stroke="#6B7280" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="300" y="320" font-family="sans-serif" font-size="18" fill="#4B5563" text-anchor="middle">Project Image</text>
+  <defs>
+    <linearGradient id="paint0_linear" x1="0" y1="0" x2="600" y2="400" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#F9FAFB"/>
+      <stop offset="1" stop-color="#E5E7EB"/>
+    </linearGradient>
+  </defs>
+</svg> 
