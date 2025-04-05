@@ -47,7 +47,7 @@ const statusLabels = {
   completed: { text: 'Completed', color: 'bg-purple-100 text-purple-800' }
 };
 
-export default function ProjectDetail({ projectId, isTeacher = false, isAdmin = false, allowEdit = false }: ProjectDetailProps) {
+export function ProjectDetail({ projectId, isTeacher = false, isAdmin = false, allowEdit = false }: ProjectDetailProps) {
   const [project, setProject] = useState<ProjectData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -297,4 +297,7 @@ export default function ProjectDetail({ projectId, isTeacher = false, isAdmin = 
       </div>
     </div>
   );
-} 
+}
+
+// Keep default export for backward compatibility
+export default ProjectDetail; 
