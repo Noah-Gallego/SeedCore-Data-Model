@@ -4,8 +4,11 @@ import { useState, useEffect } from 'react';
 import { supabase } from '../../../../utils/supabase';
 import Link from 'next/link';
 import ProjectDetail from '../../../../components/ProjectDetail';
+import { useParams } from 'next/navigation';
 
-export default function TeacherProjectPage({ params }: { params: { id: string } }) {
+export default function TeacherProjectPage() {
+  const params = useParams();
+  const projectId = params.id as string;
   const [isTeacher, setIsTeacher] = useState(false);
   const [isOwner, setIsOwner] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -13,7 +16,7 @@ export default function TeacherProjectPage({ params }: { params: { id: string } 
 
   useEffect(() => {
     checkAccess();
-  }, [params.id]);
+  }, [projectId]);
 
   const checkAccess = async () => {
     try {
@@ -52,18 +55,27 @@ export default function TeacherProjectPage({ params }: { params: { id: string } 
       }
       
       // Get teacher profile ID
-      if (!userData.teacher_profiles || !userData.teacher_profiles.id) {
+      let teacherProfileId = null;
+      
+      if (userData.teacher_profiles) {
+        // Handle both possible formats: array or object with id property
+        if (Array.isArray(userData.teacher_profiles) && userData.teacher_profiles.length > 0) {
+          teacherProfileId = userData.teacher_profiles[0].id;
+        } else if (userData.teacher_profiles && typeof userData.teacher_profiles === 'object' && 'id' in userData.teacher_profiles) {
+          teacherProfileId = userData.teacher_profiles.id;
+        }
+      }
+      
+      if (!teacherProfileId) {
         setError('Teacher profile not found');
         return;
       }
-      
-      const teacherProfileId = userData.teacher_profiles.id;
       
       // Check if this teacher is the owner of the project
       const { data: projectData, error: projectError } = await supabase
         .from('projects')
         .select('teacher_id')
-        .eq('id', params.id)
+        .eq('id', projectId)
         .single();
       
       if (projectError && projectError.code !== 'PGRST116') {
@@ -135,7 +147,7 @@ export default function TeacherProjectPage({ params }: { params: { id: string } 
         </div>
         
         <ProjectDetail 
-          projectId={params.id}
+          projectId={projectId}
           isTeacher={true}
           allowEdit={true}
         />

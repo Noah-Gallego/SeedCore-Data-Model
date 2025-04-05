@@ -91,19 +91,45 @@ export default function ProjectDetail({ projectId, isTeacher = false, isAdmin = 
         }
         
         // Transform data to match expected format
+        let teacherData = null;
+        
+        if (data.teacher_profiles) {
+          let profileId = null;
+          let schoolName = '';
+          let schoolCity = '';
+          let schoolState = '';
+          
+          // Extract profile data safely
+          if (Array.isArray(data.teacher_profiles) && data.teacher_profiles.length > 0) {
+            const profile: any = data.teacher_profiles[0];
+            profileId = profile.id;
+            schoolName = profile.school_name || '';
+            schoolCity = profile.school_city || '';
+            schoolState = profile.school_state || '';
+          } else if (typeof data.teacher_profiles === 'object' && 'id' in data.teacher_profiles) {
+            const profile: any = data.teacher_profiles;
+            profileId = profile.id;
+            schoolName = profile.school_name || '';
+            schoolCity = profile.school_city || '';
+            schoolState = profile.school_state || '';
+          }
+          
+          if (profileId) {
+            teacherData = {
+              id: profileId,
+              display_name: 'Teacher', // Default value
+              school: {
+                name: schoolName,
+                city: schoolCity,
+                state: schoolState
+              }
+            };
+          }
+        }
+        
         const formattedData: ProjectData = {
           ...data,
-          teacher: data.teacher_profiles ? {
-            id: data.teacher_profiles.id,
-            display_name: data.teacher_profiles.users ? 
-              `${data.teacher_profiles.users.first_name} ${data.teacher_profiles.users.last_name}` :
-              'Teacher',
-            school: {
-              name: data.teacher_profiles.school_name,
-              city: data.teacher_profiles.school_city,
-              state: data.teacher_profiles.school_state
-            }
-          } : null,
+          teacher: teacherData,
           categories: data.categories.map((c: any) => ({
             id: c.category.id,
             name: c.category.name

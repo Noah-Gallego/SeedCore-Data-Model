@@ -70,7 +70,7 @@ export default function TeacherDashboard() {
         // Handle both possible formats: array or object with id property
         if (Array.isArray(data.teacher_profiles) && data.teacher_profiles.length > 0) {
           teacherProfileId = data.teacher_profiles[0].id;
-        } else if (data.teacher_profiles.id) {
+        } else if (data.teacher_profiles && typeof data.teacher_profiles === 'object' && 'id' in data.teacher_profiles) {
           teacherProfileId = data.teacher_profiles.id;
         }
       }

@@ -71,8 +71,19 @@ export default function TeacherProjectsPage() {
       }
       
       // Get teacher profile ID
-      if (data.teacher_profiles && data.teacher_profiles.id) {
-        setTeacherProfileId(data.teacher_profiles.id);
+      let profileId = null;
+      
+      if (data.teacher_profiles) {
+        // Handle both possible formats: array or object with id property
+        if (Array.isArray(data.teacher_profiles) && data.teacher_profiles.length > 0) {
+          profileId = data.teacher_profiles[0].id;
+        } else if (data.teacher_profiles && typeof data.teacher_profiles === 'object' && 'id' in data.teacher_profiles) {
+          profileId = data.teacher_profiles.id;
+        }
+      }
+      
+      if (profileId) {
+        setTeacherProfileId(profileId);
       } else {
         setError('Teacher profile not found. Please complete your profile setup.');
         setIsLoading(false);
