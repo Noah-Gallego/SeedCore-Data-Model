@@ -10,77 +10,68 @@ export const metadata: Metadata = {
 
 export default function AboutPage() {
   return (
-    <div className="bg-white dark:bg-gray-900">
-      {/* Thematic banner image */}
-      <div className="relative h-48 sm:h-64 lg:h-80 w-full overflow-hidden mb-16 sm:mb-20 rounded-lg shadow-inner">
-        <img 
-          src="https://images.unsplash.com/photo-1492496913980-501348b61469?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1920&q=80" 
-          alt="Hands holding a small growing plant" 
-          className="w-full h-full object-cover object-center rounded-lg filter brightness-75"
-        />
+    <div className="max-w-4xl mx-auto py-8">
+      <h1 className="text-3xl font-bold mb-6">About Beyond Measure</h1>
+      
+      <div className="bg-white dark:bg-gray-800 shadow-md rounded-lg overflow-hidden mb-8">
+        <div className="p-6">
+          <h2 className="text-xl font-semibold mb-4">Our Mission</h2>
+          <p className="text-gray-600 dark:text-gray-300 mb-6">
+            Beyond Measure exists to support teachers in private Christian schools by connecting them with donors who share their passion for quality education. We believe that every teacher should have the resources they need to create exceptional learning experiences for their students.
+          </p>
+          
+          <h2 className="text-xl font-semibold mb-4">Our Story</h2>
+          <p className="text-gray-600 dark:text-gray-300 mb-4">
+            Beyond Measure was founded in 2022 by a group of educators and philanthropists who recognized the unique funding challenges faced by private Christian schools. We observed that while these schools offer incredible educational experiences, they often lack the financial resources available to public institutions.
+          </p>
+          <p className="text-gray-600 dark:text-gray-300 mb-6">
+            What started as a small initiative to help a few local schools has grown into a platform that connects teachers and donors across the country, channeling resources directly to classrooms where they can make the biggest impact.
+          </p>
+          
+          <h2 className="text-xl font-semibold mb-4">Our Values</h2>
+          <div className="grid md:grid-cols-2 gap-4 mb-6">
+            <div className="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
+              <h3 className="font-medium text-gray-900 dark:text-white mb-2">Faith-Based Education</h3>
+              <p className="text-gray-600 dark:text-gray-300 text-sm">
+                We believe in the importance of education that incorporates faith and values.
+              </p>
+            </div>
+            <div className="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
+              <h3 className="font-medium text-gray-900 dark:text-white mb-2">Transparency</h3>
+              <p className="text-gray-600 dark:text-gray-300 text-sm">
+                We're committed to being open about how funds are used and the impact they create.
+              </p>
+            </div>
+            <div className="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
+              <h3 className="font-medium text-gray-900 dark:text-white mb-2">Direct Impact</h3>
+              <p className="text-gray-600 dark:text-gray-300 text-sm">
+                100% of donations go directly to classroom projects, with no platform fees.
+              </p>
+            </div>
+            <div className="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
+              <h3 className="font-medium text-gray-900 dark:text-white mb-2">Community</h3>
+              <p className="text-gray-600 dark:text-gray-300 text-sm">
+                We foster connections between donors, teachers, and students to create a supportive community.
+              </p>
+            </div>
+          </div>
+        </div>
       </div>
-
-      <div className="pb-16 sm:pb-20 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-3xl mx-auto">
-          <h1 className="text-4xl font-extrabold sm:text-5xl mb-12 text-center bg-gradient-to-r from-blue-600 to-indigo-700 bg-clip-text text-transparent">
-            About Us
-          </h1>
-
-          <div className="space-y-16">
-            <section>
-              <h2 className="text-3xl font-semibold text-indigo-600 dark:text-indigo-400 mb-5">
-                Our Mission
-              </h2>
-              <p className="text-lg text-gray-700 dark:text-gray-300 leading-relaxed">
-                Bless teachers at Christian schools with the resources they need to provide enriching classrooms for student learning.
-              </p>
-            </section>
-
-            <section>
-              <h2 className="text-3xl font-semibold text-indigo-600 dark:text-indigo-400 mb-5">
-                Our Vision
-              </h2>
-              <p className="text-lg text-gray-700 dark:text-gray-300 leading-relaxed">
-                We envision a future in which private Christian schools thrive with abundant resources that enable educators to focus on inspiring students and nurturing future leaders.
-              </p>
-            </section>
-
-            <section>
-              <h2 className="text-3xl font-semibold text-indigo-600 dark:text-indigo-400 mb-5">
-                Our Story
-              </h2>
-              <p className="text-lg text-gray-700 dark:text-gray-300 leading-relaxed mb-10">
-                Since deciding to send their kids to a private school, John-Paul & Ingrid Lake have seen the needs of the schools they have attended from several different perspectives. Getting to know the teachers at the schools quickly showed them that most teachers who work in private schools do so as a form of ministry. In getting to know the administrators, they saw that while operating in modest facilities and managing a staff that earns less than their public school counterparts, there was always a desire to provide the best education. As with any ministry, there is sacrifice involved as well as a need for a good base of support, so they had an idea to provide an online platform that would help alleviate the sacrifice, increase support, and augment the private school experience.
-              </p>
-
-              <div className="mt-12 text-center">
-                <h3 className="text-2xl font-semibold text-gray-800 dark:text-gray-200 mb-8">
-                  Our Founders
-                </h3>
-                <div className="flex flex-col sm:flex-row justify-center items-center sm:space-x-24 md:space-x-36 lg:space-x-48 space-y-8 sm:space-y-0" style={{WebkitJustifyContent: 'space-evenly', justifyContent: 'space-evenly', WebkitBoxPack: 'justify'}}>
-                  <div className="text-center" style={{WebkitBoxFlex: '0', WebkitFlex: '0 1 auto', flex: '0 1 auto'}}>
-                    <div className="relative w-32 h-32 mx-auto mb-3">
-                      <img 
-                        src="https://images.squarespace-cdn.com/content/v1/5cc89378c2ff6148357ca547/fa1bdb2d-aff6-4bc8-9e0f-e09319fbdad6/_DSC1201.jpg" 
-                        alt="John-Paul Lake Headshot" 
-                        className="w-full h-full object-cover rounded-full shadow-lg border-2 border-white dark:border-gray-700 filter brightness-75"
-                      />
-                    </div>
-                    <p className="text-md font-medium text-gray-700 dark:text-gray-300">John-Paul Lake</p>
-                  </div>
-                  <div className="text-center" style={{WebkitBoxFlex: '0', WebkitFlex: '0 1 auto', flex: '0 1 auto'}}>
-                    <div className="relative w-32 h-32 mx-auto mb-3">
-                      <img 
-                        src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTS6Wj8NNrzyoMmkS-xHwxFkn58ApQfGNHiBQ&s" 
-                        alt="Ingrid Lake Headshot" 
-                        className="w-full h-full object-cover rounded-full shadow-lg border-2 border-white dark:border-gray-700 filter brightness-75"
-                      />
-                    </div>
-                    <p className="text-md font-medium text-gray-700 dark:text-gray-300">Ingrid Lake</p>
-                  </div>
-                </div>
-              </div>
-            </section>
+      
+      <div className="bg-white dark:bg-gray-800 shadow-md rounded-lg overflow-hidden">
+        <div className="p-6">
+          <h2 className="text-xl font-semibold mb-4">Our Team</h2>
+          <p className="text-gray-600 dark:text-gray-300 mb-6">
+            Beyond Measure is powered by a dedicated team of professionals with backgrounds in education, technology, and nonprofit management. We're united by our commitment to supporting Christian educators and enhancing the learning experience for students.
+          </p>
+          
+          <div className="flex justify-center mt-8">
+            <a 
+              href="/contact" 
+              className="px-6 py-3 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+            >
+              Contact Us
+            </a>
           </div>
         </div>
       </div>

@@ -53,6 +53,7 @@ export default function RootLayout({
     <html lang="en" className="h-full">
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-full flex flex-col`}
+        suppressHydrationWarning
       >
         <AuthProvider>
           <DynamicAdminNav />

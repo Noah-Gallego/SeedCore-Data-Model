@@ -4,9 +4,17 @@ import Link from 'next/link';
 import Image from 'next/image';
 import dynamic from 'next/dynamic';
 import CheckDatabase from '../components/CheckDatabase';
+import { ErrorBoundary } from 'react-error-boundary';
 
 // Dynamic import to avoid SSR issues
-const ProjectsList = dynamic(() => import('../components/ProjectsList'), { ssr: false });
+const ProjectsList = dynamic(() => import('../components/ProjectsList'), { 
+  ssr: false,
+  loading: () => (
+    <div className="flex justify-center items-center py-16">
+      <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-600"></div>
+    </div>
+  )
+});
 
 export default function Home() {
   return (
@@ -161,7 +169,23 @@ export default function Home() {
             </svg>
           </Link>
         </div>
-        <ProjectsList />
+        <div className="mt-2 h-auto min-h-[400px]">
+          <ErrorBoundary fallback={
+            <div className="bg-white dark:bg-gray-900 rounded-xl p-8 text-center border border-gray-200 dark:border-gray-800 shadow-sm">
+              <div className="mx-auto h-24 w-24 text-gray-400">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+              </div>
+              <h3 className="mt-4 text-lg font-medium text-gray-900 dark:text-white">Error Loading Projects</h3>
+              <p className="mt-2 text-gray-600 dark:text-gray-400">
+                There was a problem loading the featured projects. Please try again later.
+              </p>
+            </div>
+          }>
+            <ProjectsList featured={true} limit={3} />
+          </ErrorBoundary>
+        </div>
       </section>
 
       {/* How It Works Section */}
