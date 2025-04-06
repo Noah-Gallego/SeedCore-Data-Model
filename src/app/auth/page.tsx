@@ -46,13 +46,13 @@ export default function AuthPage() {
         
         <p className="mt-8 text-center text-sm text-gray-500 dark:text-gray-400">
           By signing up, you agree to our{' '}
-          <a href="#" className="font-medium text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300">
-            Terms of Service
-          </a>{' '}
+          <Link href="/terms-of-use" className="font-medium text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300">
+            Terms of Use
+          </Link>{' '}
           and{' '}
-          <a href="#" className="font-medium text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300">
+          <Link href="/privacy-policy" className="font-medium text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300">
             Privacy Policy
-          </a>
+          </Link>
         </p>
       </div>
     </div>

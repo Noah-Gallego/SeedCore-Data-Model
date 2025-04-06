@@ -19,30 +19,39 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const setData = async () => {
-      const { data: { session }, error } = await supabase.auth.getSession();
-      if (error) {
-        console.error(error);
-        setIsLoading(false);
-        return;
+    let isMounted = true;
+
+    // Initial session check
+    const getInitialSession = async () => {
+      try {
+        const { data } = await supabase.auth.getSession();
+        
+        if (isMounted) {
+          setSession(data.session);
+          setUser(data.session?.user ?? null);
+        }
+      } catch (error) {
+        console.error('Error checking auth session:', error);
+      } finally {
+        if (isMounted) {
+          setIsLoading(false);
+        }
       }
-      
-      setSession(session);
-      setUser(session?.user ?? null);
-      setIsLoading(false);
     };
 
-    setData();
+    getInitialSession();
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (_event, session) => {
+    // Listen for auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (isMounted) {
         setSession(session);
         setUser(session?.user ?? null);
         setIsLoading(false);
       }
-    );
+    });
 
     return () => {
+      isMounted = false;
       subscription.unsubscribe();
     };
   }, []);

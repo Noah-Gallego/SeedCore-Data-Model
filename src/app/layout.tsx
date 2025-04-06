@@ -5,6 +5,24 @@ import { AuthProvider } from '../components/AuthProvider';
 import Header from '../components/Header';
 import AdminNav from '../components/AdminNav';
 import TeacherNav from '../components/TeacherNav';
+import Link from 'next/link';
+import dynamic from 'next/dynamic';
+
+// Use dynamic import for components that might delay rendering
+const DynamicHeader = dynamic(() => import('../components/Header'), {
+  ssr: true,
+  loading: () => <div className="h-16 border-b border-gray-200 dark:border-gray-800"></div>
+});
+
+const DynamicAdminNav = dynamic(() => import('../components/AdminNav'), {
+  ssr: true,
+  loading: () => null
+});
+
+const DynamicTeacherNav = dynamic(() => import('../components/TeacherNav'), {
+  ssr: true,
+  loading: () => null
+});
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -37,9 +55,9 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-full flex flex-col`}
       >
         <AuthProvider>
-          <AdminNav />
-          <TeacherNav />
-          <Header />
+          <DynamicAdminNav />
+          <DynamicTeacherNav />
+          <DynamicHeader />
           <main className="flex-grow">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
               {children}
@@ -52,32 +70,18 @@ export default function RootLayout({
                   <div className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-indigo-700 bg-clip-text text-transparent mb-2">Beyond Measure</div>
                   <p className="text-sm text-gray-500 dark:text-gray-400 max-w-md">Connecting teachers with donors to fund educational projects that make a difference in students' lives.</p>
                 </div>
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-8 md:gap-12 text-center md:text-left">
-                  <div>
-                    <h3 className="text-sm font-semibold text-gray-900 dark:text-white uppercase tracking-wider mb-4">About</h3>
-                    <ul className="space-y-3">
-                      <li>
-                        <a href="#" className="text-gray-500 hover:text-primary dark:text-gray-400 dark:hover:text-primary-light text-sm">Our Mission</a>
-                      </li>
-                      <li>
-                        <a href="#" className="text-gray-500 hover:text-primary dark:text-gray-400 dark:hover:text-primary-light text-sm">Team</a>
-                      </li>
-                      <li>
-                        <a href="#" className="text-gray-500 hover:text-primary dark:text-gray-400 dark:hover:text-primary-light text-sm">Careers</a>
-                      </li>
-                    </ul>
-                  </div>
+                <div className="grid grid-cols-2 md:grid-cols-2 gap-8 md:gap-12 text-center md:text-left">
                   <div>
                     <h3 className="text-sm font-semibold text-gray-900 dark:text-white uppercase tracking-wider mb-4">Resources</h3>
                     <ul className="space-y-3">
                       <li>
-                        <a href="#" className="text-gray-500 hover:text-primary dark:text-gray-400 dark:hover:text-primary-light text-sm">Help Center</a>
+                        <Link href="/about" className="text-gray-500 hover:text-primary dark:text-gray-400 dark:hover:text-primary-light text-sm">About</Link>
                       </li>
                       <li>
-                        <a href="#" className="text-gray-500 hover:text-primary dark:text-gray-400 dark:hover:text-primary-light text-sm">Blog</a>
+                        <Link href="/contact" className="text-gray-500 hover:text-primary dark:text-gray-400 dark:hover:text-primary-light text-sm">Contact</Link>
                       </li>
                       <li>
-                        <a href="#" className="text-gray-500 hover:text-primary dark:text-gray-400 dark:hover:text-primary-light text-sm">Contact</a>
+                        <Link href="/faq" className="text-gray-500 hover:text-primary dark:text-gray-400 dark:hover:text-primary-light text-sm">FAQ</Link>
                       </li>
                     </ul>
                   </div>
@@ -85,13 +89,10 @@ export default function RootLayout({
                     <h3 className="text-sm font-semibold text-gray-900 dark:text-white uppercase tracking-wider mb-4">Legal</h3>
                     <ul className="space-y-3">
                       <li>
-                        <a href="#" className="text-gray-500 hover:text-primary dark:text-gray-400 dark:hover:text-primary-light text-sm">Privacy</a>
+                        <Link href="/privacy-policy" className="text-gray-500 hover:text-primary dark:text-gray-400 dark:hover:text-primary-light text-sm">Privacy Policy</Link>
                       </li>
                       <li>
-                        <a href="#" className="text-gray-500 hover:text-primary dark:text-gray-400 dark:hover:text-primary-light text-sm">Terms</a>
-                      </li>
-                      <li>
-                        <a href="#" className="text-gray-500 hover:text-primary dark:text-gray-400 dark:hover:text-primary-light text-sm">Accessibility</a>
+                        <Link href="/terms-of-use" className="text-gray-500 hover:text-primary dark:text-gray-400 dark:hover:text-primary-light text-sm">Terms of Use</Link>
                       </li>
                     </ul>
                   </div>

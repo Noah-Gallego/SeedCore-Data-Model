@@ -10,6 +10,11 @@ export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [userRole, setUserRole] = useState<string | null>(null);
   const [isTeacher, setIsTeacher] = useState(false);
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   useEffect(() => {
     // Fetch user role when user is loaded
@@ -38,6 +43,140 @@ export default function Header() {
     fetchUserRole();
   }, [user]);
 
+  // Render auth buttons only on client-side to avoid hydration mismatch
+  const renderAuthButtons = () => {
+    if (!isMounted) {
+      return null; // Return nothing during SSR
+    }
+
+    if (isLoading) {
+      return <div className="h-5 w-20 rounded bg-gray-200 dark:bg-gray-700 animate-pulse"></div>;
+    }
+
+    if (user) {
+      return (
+        <div className="flex items-center space-x-4">
+          <Link href="/account" className="flex items-center space-x-2 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-md px-2 py-1 transition-colors">
+            <div className="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900 flex items-center justify-center">
+              <span className="text-blue-600 dark:text-blue-400 font-medium text-sm">
+                {user.email?.charAt(0).toUpperCase()}
+              </span>
+            </div>
+            <div>
+              <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                {user.email?.split('@')[0]}
+              </span>
+              {userRole && (
+                <span className="text-xs text-gray-500 dark:text-gray-400 block">
+                  {userRole.charAt(0).toUpperCase() + userRole.slice(1)}
+                </span>
+              )}
+            </div>
+          </Link>
+          {isTeacher && (
+            <Link
+              href="/projects/create"
+              className="btn btn-primary btn-sm"
+            >
+              + New Project
+            </Link>
+          )}
+          <button
+            onClick={() => signOut()}
+            className="btn btn-ghost btn-sm text-gray-700 hover:text-red-600 dark:text-gray-300 dark:hover:text-red-400"
+          >
+            Sign Out
+          </button>
+        </div>
+      );
+    }
+
+    return (
+      <Link
+        href="/auth"
+        className="btn btn-primary btn-sm"
+      >
+        Sign In
+      </Link>
+    );
+  };
+
+  // Render mobile auth buttons
+  const renderMobileAuthButtons = () => {
+    if (!isMounted) {
+      return null; // Return nothing during SSR
+    }
+
+    if (isLoading) {
+      return (
+        <div className="px-4 py-2">
+          <div className="h-5 w-20 rounded bg-gray-200 dark:bg-gray-700 animate-pulse"></div>
+        </div>
+      );
+    }
+
+    if (user) {
+      return (
+        <div>
+          <Link href="/account" onClick={() => setIsMenuOpen(false)}>
+            <div className="flex items-center px-4 py-2 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+              <div className="flex-shrink-0">
+                <div className="w-10 h-10 rounded-full bg-blue-100 dark:bg-blue-900 flex items-center justify-center">
+                  <span className="text-blue-600 dark:text-blue-400 font-medium">
+                    {user.email?.charAt(0).toUpperCase()}
+                  </span>
+                </div>
+              </div>
+              <div className="ml-3">
+                <div className="text-base font-medium text-gray-800 dark:text-gray-200">{user.email?.split('@')[0]}</div>
+                <div className="text-sm font-medium text-gray-500 dark:text-gray-400">
+                  {user.email}
+                  {userRole && <span className="ml-2">({userRole})</span>}
+                </div>
+              </div>
+            </div>
+          </Link>
+          <div className="mt-3 px-2 space-y-1">
+            <Link
+              href="/account"
+              className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-blue-600 dark:text-gray-300 dark:hover:text-blue-400 hover:bg-gray-50 dark:hover:bg-gray-800"
+              onClick={() => setIsMenuOpen(false)}
+            >
+              My Account
+            </Link>
+            {isTeacher && (
+              <Link
+                href="/projects/create"
+                className="btn btn-primary w-full justify-center"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                + New Project
+              </Link>
+            )}
+            <button
+              onClick={() => signOut()}
+              className="btn btn-ghost w-full justify-center text-left px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-red-600 dark:text-gray-300 dark:hover:text-red-400"
+            >
+              Sign Out
+            </button>
+          </div>
+        </div>
+      );
+    }
+
+    return (
+      <div className="px-2 pt-2 pb-3 flex flex-col space-y-2">
+        <Link
+          href="/auth"
+          className="btn btn-primary w-full justify-center"
+          onClick={() => setIsMenuOpen(false)}
+        >
+          Sign In
+        </Link>
+      </div>
+    );
+  };
+
   return (
     <header className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 sticky top-0 z-10 backdrop-blur-sm bg-white/90 dark:bg-gray-900/90">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -58,7 +197,10 @@ export default function Header() {
               <Link href="/about" className="px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:text-blue-600 dark:text-gray-300 dark:hover:text-blue-400 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
                 About
               </Link>
-              {isTeacher && (
+              <Link href="/contact" className="px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:text-blue-600 dark:text-gray-300 dark:hover:text-blue-400 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+                Contact
+              </Link>
+              {isMounted && isTeacher && (
                 <Link href="/projects/create" className="px-3 py-2 rounded-md text-sm font-medium text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors">
                   + New Project
                 </Link>
@@ -67,50 +209,7 @@ export default function Header() {
           </div>
           
           <div className="hidden md:flex items-center space-x-4">
-            {isLoading ? (
-              <div className="h-5 w-20 rounded bg-gray-200 dark:bg-gray-700 animate-pulse"></div>
-            ) : user ? (
-              <div className="flex items-center space-x-4">
-                <Link href="/account" className="flex items-center space-x-2 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-md px-2 py-1 transition-colors">
-                  <div className="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900 flex items-center justify-center">
-                    <span className="text-blue-600 dark:text-blue-400 font-medium text-sm">
-                      {user.email?.charAt(0).toUpperCase()}
-                    </span>
-                  </div>
-                  <div>
-                    <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                      {user.email?.split('@')[0]}
-                    </span>
-                    {userRole && (
-                      <span className="text-xs text-gray-500 dark:text-gray-400 block">
-                        {userRole.charAt(0).toUpperCase() + userRole.slice(1)}
-                      </span>
-                    )}
-                  </div>
-                </Link>
-                {isTeacher && (
-                  <Link
-                    href="/projects/create"
-                    className="btn btn-primary btn-sm"
-                  >
-                    + New Project
-                  </Link>
-                )}
-                <button
-                  onClick={() => signOut()}
-                  className="btn btn-ghost btn-sm text-gray-700 hover:text-red-600 dark:text-gray-300 dark:hover:text-red-400"
-                >
-                  Sign Out
-                </button>
-              </div>
-            ) : (
-              <Link
-                href="/auth"
-                className="btn btn-primary btn-sm"
-              >
-                Sign In
-              </Link>
-            )}
+            {renderAuthButtons()}
           </div>
           
           {/* Mobile menu button */}
@@ -159,7 +258,14 @@ export default function Header() {
             >
               About
             </Link>
-            {isTeacher && (
+            <Link 
+              href="/contact" 
+              className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-blue-600 dark:text-gray-300 dark:hover:text-blue-400 hover:bg-gray-50 dark:hover:bg-gray-800"
+              onClick={() => setIsMenuOpen(false)}
+            >
+              Contact
+            </Link>
+            {isMounted && isTeacher && (
               <Link 
                 href="/projects/create" 
                 className="block px-3 py-2 rounded-md text-base font-medium text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-900/20"
@@ -170,66 +276,7 @@ export default function Header() {
             )}
           </div>
           <div className="pt-4 pb-3 border-t border-gray-200 dark:border-gray-800">
-            {isLoading ? (
-              <div className="px-4 py-2">
-                <div className="h-5 w-20 rounded bg-gray-200 dark:bg-gray-700 animate-pulse"></div>
-              </div>
-            ) : user ? (
-              <div>
-                <Link href="/account" onClick={() => setIsMenuOpen(false)}>
-                  <div className="flex items-center px-4 py-2 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
-                    <div className="flex-shrink-0">
-                      <div className="w-10 h-10 rounded-full bg-blue-100 dark:bg-blue-900 flex items-center justify-center">
-                        <span className="text-blue-600 dark:text-blue-400 font-medium">
-                          {user.email?.charAt(0).toUpperCase()}
-                        </span>
-                      </div>
-                    </div>
-                    <div className="ml-3">
-                      <div className="text-base font-medium text-gray-800 dark:text-gray-200">{user.email?.split('@')[0]}</div>
-                      <div className="text-sm font-medium text-gray-500 dark:text-gray-400">
-                        {user.email}
-                        {userRole && <span className="ml-2">({userRole})</span>}
-                      </div>
-                    </div>
-                  </div>
-                </Link>
-                <div className="mt-3 px-2 space-y-1">
-                  <Link
-                    href="/account"
-                    className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-blue-600 dark:text-gray-300 dark:hover:text-blue-400 hover:bg-gray-50 dark:hover:bg-gray-800"
-                    onClick={() => setIsMenuOpen(false)}
-                  >
-                    My Account
-                  </Link>
-                  {isTeacher && (
-                    <Link
-                      href="/projects/create"
-                      className="btn btn-primary w-full justify-center"
-                      onClick={() => setIsMenuOpen(false)}
-                    >
-                      + New Project
-                    </Link>
-                  )}
-                  <button
-                    onClick={() => signOut()}
-                    className="btn btn-ghost w-full justify-center text-left px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-red-600 dark:text-gray-300 dark:hover:text-red-400"
-                  >
-                    Sign Out
-                  </button>
-                </div>
-              </div>
-            ) : (
-              <div className="px-2 pt-2 pb-3 flex flex-col space-y-2">
-                <Link
-                  href="/auth"
-                  className="btn btn-primary w-full justify-center"
-                  onClick={() => setIsMenuOpen(false)}
-                >
-                  Sign In
-                </Link>
-              </div>
-            )}
+            {renderMobileAuthButtons()}
           </div>
         </div>
       )}

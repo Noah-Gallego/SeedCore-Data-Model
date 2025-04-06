@@ -1,7 +1,16 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { supabase } from '../utils/supabase';
+
+// Declare the global callback function for TypeScript
+declare global {
+  interface Window {
+    initPlacesAPI: () => void;
+    google: any;
+    gm_authFailure: () => void;
+  }
+}
 
 export default function Auth() {
   const [loading, setLoading] = useState(false);
@@ -15,6 +24,8 @@ export default function Auth() {
   const [lastName, setLastName] = useState('');
   const [isSignUp, setIsSignUp] = useState(false);
   const [role, setRole] = useState('donor');
+  const [googleMapsLoaded, setGoogleMapsLoaded] = useState(false);
+  const [placesInitialized, setPlacesInitialized] = useState(false);
   
   // Teacher-specific fields
   const [schoolName, setSchoolName] = useState('');
@@ -25,6 +36,243 @@ export default function Auth() {
   const [positionTitle, setPositionTitle] = useState('');
 
   const [passwordStrength, setPasswordStrength] = useState(0);
+  const [showAddressSuggestions, setShowAddressSuggestions] = useState(false);
+  const [addressSuggestions, setAddressSuggestions] = useState<string[]>([]);
+  
+  const addressWrapperRef = useRef<HTMLDivElement>(null);
+  const addressInputRef = useRef<HTMLInputElement>(null);
+  const autocompleteRef = useRef<google.maps.places.Autocomplete | null>(null);
+  
+  // Handle clicks outside of the address dropdown
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (addressWrapperRef.current && !addressWrapperRef.current.contains(event.target as Node)) {
+        setShowAddressSuggestions(false);
+      }
+    }
+    
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+  
+  // Load Google Maps API
+  useEffect(() => {
+    // Only run on the client side to prevent hydration mismatches
+    if (typeof window === 'undefined') return;
+    
+    if (role === 'teacher' && !googleMapsLoaded) {
+      console.log('Loading Google Maps API with Places library...');
+      
+      // Define the callback function that Google Maps will call when ready
+      window.initPlacesAPI = function() {
+        console.log('Google Maps Places API loaded successfully via callback!');
+        setGoogleMapsLoaded(true);
+        
+        // Add custom styles to hide Google's default UI
+        const style = document.createElement('style');
+        style.textContent = `
+          /* Hide Google's default autocomplete dropdown */
+          .pac-container {
+            z-index: 10000;
+            border-radius: 0.5rem;
+            border: 1px solid #e5e7eb;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            background-color: white;
+            font-family: inherit;
+            margin-top: 0.25rem;
+            overflow: hidden;
+          }
+          
+          /* Style the items in dropdown */
+          .pac-item {
+            padding: 0.75rem 1rem;
+            font-size: 0.875rem;
+            cursor: pointer;
+            color: #374151;
+            border-top: 1px solid #e5e7eb;
+            font-family: inherit;
+            line-height: 1.5;
+          }
+          
+          .pac-item:first-child {
+            border-top: none;
+          }
+          
+          .pac-item:hover {
+            background-color: #EBF5FF;
+          }
+          
+          .pac-item-query {
+            font-size: 0.875rem;
+            color: #111827;
+            font-weight: 500;
+          }
+          
+          .pac-icon {
+            margin-right: 0.5rem;
+          }
+          
+          .pac-matched {
+            color: #2563eb;
+            font-weight: 600;
+          }
+          
+          .pac-item-selected {
+            background-color: #EBF5FF;
+          }
+          
+          /* Dark mode support */
+          @media (prefers-color-scheme: dark) {
+            .pac-container {
+              background-color: #1f2937;
+              border-color: #374151;
+            }
+            
+            .pac-item {
+              color: #f3f4f6;
+              border-top: 1px solid #374151;
+            }
+            
+            .pac-item:hover {
+              background-color: rgba(59, 130, 246, 0.1);
+            }
+            
+            .pac-item-query {
+              color: #f9fafb;
+            }
+            
+            .pac-matched {
+              color: #60a5fa;
+            }
+            
+            .pac-item-selected {
+              background-color: rgba(59, 130, 246, 0.1);
+            }
+            
+            .pac-icon, .pac-icon-marker {
+              filter: invert(1);
+            }
+          }
+        `;
+        document.head.appendChild(style);
+      };
+      
+      // Add error handler for Maps API loading issues
+      window.gm_authFailure = function() {
+        console.error('Google Maps API authentication failed. Your API key may be invalid or missing required API activations.');
+        alert('Google Maps API error: Please make sure your API key has both the Maps JavaScript API and Places API activated in the Google Cloud Console.');
+      };
+      
+      // Check if script already exists
+      if (!document.querySelector('script[src*="maps.googleapis.com/maps/api/js"]')) {
+        const script = document.createElement('script');
+        script.src = `https://maps.googleapis.com/maps/api/js?key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || 'AIzaSyDZ0bKD5EPCHctwI9bJPiGe1KQHbtqq2FU'}&libraries=places&callback=initPlacesAPI`;
+        script.async = true;
+        script.defer = true;
+        
+        // Handle script load error
+        script.onerror = (error) => {
+          console.error('Error loading Google Maps API script:', error);
+          alert('Failed to load Google Maps API. Check your internet connection or API key configuration.');
+        };
+        
+        document.head.appendChild(script);
+      } else if (window.google && window.google.maps && window.google.maps.places) {
+        // Script already exists and API is loaded
+        setGoogleMapsLoaded(true);
+      }
+    }
+  }, [role, googleMapsLoaded]);
+  
+  // Initialize Autocomplete once Google Maps is loaded
+  useEffect(() => {
+    if (typeof window === 'undefined' || !googleMapsLoaded || !window.google?.maps?.places || placesInitialized) {
+      return;
+    }
+    
+    try {
+      console.log('Initializing Places Autocomplete...');
+      
+      if (addressInputRef.current) {
+        // Create the autocomplete instance
+        autocompleteRef.current = new window.google.maps.places.Autocomplete(addressInputRef.current, {
+          componentRestrictions: { country: 'us' },
+          fields: ['address_components', 'formatted_address'],
+          types: ['address']
+        });
+        
+        // Add listener for place selection
+        if (autocompleteRef.current) {
+          autocompleteRef.current.addListener('place_changed', () => {
+            if (autocompleteRef.current) {
+              const place = autocompleteRef.current.getPlace();
+              console.log('Selected place:', place);
+            
+              if (place.address_components) {
+                // Set the full address
+                setSchoolAddress(place.formatted_address || '');
+                
+                // Extract components
+                let city = '';
+                let state = '';
+                let postalCode = '';
+                
+                place.address_components.forEach(component => {
+                  const types = component.types;
+                  console.log('Component:', component.long_name, 'Types:', types);
+                  
+                  if (types.includes('locality')) {
+                    city = component.long_name;
+                  } else if (types.includes('administrative_area_level_1')) {
+                    state = component.short_name;
+                  } else if (types.includes('postal_code')) {
+                    postalCode = component.long_name;
+                  }
+                });
+                
+                console.log('Extracted city:', city);
+                console.log('Extracted state:', state);
+                console.log('Extracted postal code:', postalCode);
+                
+                // Update state with extracted components
+                setSchoolCity(city);
+                setSchoolState(state);
+                setSchoolPostalCode(postalCode);
+              }
+            }
+          });
+        }
+        
+        setPlacesInitialized(true);
+        console.log('Places Autocomplete initialized successfully');
+      }
+    } catch (error) {
+      console.error('Error initializing Places Autocomplete:', error);
+    }
+  }, [googleMapsLoaded, placesInitialized]);
+  
+  // Log Places Autocomplete status
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    
+    if (role === 'teacher') {
+      console.log('Google object exists:', !!window.google);
+      console.log('Google maps exists:', !!window.google?.maps);
+      console.log('Google places exists:', !!window.google?.maps?.places);
+      console.log('Places initialized:', placesInitialized);
+    }
+  }, [role, googleMapsLoaded, placesInitialized]);
+  
+  // Update schoolAddress state
+  const handleAddressChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newAddress = e.target.value;
+    console.log('Address input changed:', newAddress);
+    
+    // Update the form state
+    setSchoolAddress(newAddress);
+  };
   
   // Check if passwords match and update error state
   const checkPasswordsMatch = (pass: string, confirmPass: string) => {
@@ -82,14 +330,34 @@ export default function Auth() {
     
     try {
       setLoading(true);
-      const { error } = await supabase.auth.signInWithPassword({
+      console.log('Auth: Attempting to sign in with email:', email);
+      
+      // Add a timeout for the login attempt
+      const loginPromise = supabase.auth.signInWithPassword({
         email,
         password,
       });
-
-      if (error) throw error;
+      
+      // Create a timeout promise
+      const timeoutPromise = new Promise((_, reject) => {
+        setTimeout(() => {
+          reject(new Error('Sign in attempt timed out after 10 seconds. Please try again.'));
+        }, 10000);
+      });
+      
+      // Race the login promise against the timeout
+      const result = await Promise.race([loginPromise, timeoutPromise]) as any;
+      
+      if (result.error) {
+        console.error('Auth: Sign in error:', result.error);
+        throw result.error;
+      }
+      
+      console.log('Auth: Sign in successful:', result.data?.user?.id);
+      // Redirect will be handled by the AuthProvider
     } catch (error: any) {
-      alert(error.message);
+      console.error('Auth: Exception during sign in:', error);
+      alert(error.message || 'An error occurred during sign in. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -117,10 +385,10 @@ export default function Auth() {
     
     try {
       setLoading(true);
-      console.log('Starting sign-up process');
+      console.log('Auth: Starting sign-up process with email:', email);
       
-      // Sign up the user with Supabase Auth
-      const { data: authData, error: signUpError } = await supabase.auth.signUp({
+      // Create sign-up promise
+      const signUpPromise = supabase.auth.signUp({
         email,
         password,
         options: {
@@ -131,70 +399,85 @@ export default function Auth() {
           }
         }
       });
-
-      console.log('Auth response:', authData);
-      console.log('Selected role:', role);
       
-      if (signUpError) {
-        console.error('Sign-up error:', signUpError);
-        throw signUpError;
+      // Create timeout promise
+      const timeoutPromise = new Promise((_, reject) => {
+        setTimeout(() => {
+          reject(new Error('Sign up attempt timed out after 15 seconds. Please try again.'));
+        }, 15000);
+      });
+      
+      // Race the signup promise against the timeout
+      const signUpResult = await Promise.race([signUpPromise, timeoutPromise]) as any;
+      
+      if (signUpResult.error) {
+        console.error('Auth: Sign-up error:', signUpResult.error);
+        throw signUpResult.error;
       }
-
+      
+      const authData = signUpResult.data;
+      console.log('Auth: Auth response received');
+      
       if (!authData.user) {
-        console.log('Auth data returned but no user object');
+        console.error('Auth: Auth data returned but no user object');
         throw new Error('Something went wrong during signup. Please try again.');
       }
       
-      console.log('Auth user created successfully:', authData.user.id);
+      console.log('Auth: User created successfully with ID:', authData.user.id);
       
       // Try using the API route which will handle both user and profile creation
-      try {
-        console.log('Calling API route with role:', role);
-        
-        const userData = {
+      const createUserPromise = fetch('/api/auth/create-user', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
           authId: authData.user.id,
           email,
           firstName,
           lastName,
           role,
-        };
+          schoolName: role === 'teacher' ? schoolName : undefined,
+          schoolAddress: role === 'teacher' ? schoolAddress : undefined,
+          schoolCity: role === 'teacher' ? schoolCity : undefined,
+          schoolState: role === 'teacher' ? schoolState : undefined,
+          schoolPostalCode: role === 'teacher' ? schoolPostalCode : undefined,
+          positionTitle: role === 'teacher' ? positionTitle : undefined,
+        }),
+      });
+      
+      // Create another timeout promise for the API call
+      const apiTimeoutPromise = new Promise((_, reject) => {
+        setTimeout(() => {
+          reject(new Error('Profile creation timed out. Your account was created but profile setup may be incomplete.'));
+        }, 10000);
+      });
+      
+      // Race the API promise against the timeout
+      const profileResult = await Promise.race([createUserPromise, apiTimeoutPromise]);
+      
+      if (profileResult instanceof Response) {
+        const responseData = await profileResult.json();
         
-        // Add teacher-specific fields if role is teacher
-        if (role === 'teacher') {
-          Object.assign(userData, {
-            schoolName,
-            schoolAddress,
-            schoolCity,
-            schoolState,
-            schoolPostalCode,
-            positionTitle
-          });
+        if (!profileResult.ok) {
+          console.error('Auth: Error creating user profile:', responseData.error);
+          throw new Error(`Error creating user profile: ${responseData.error || 'Unknown error'}`);
         }
         
-        const response = await fetch('/api/auth/create-user', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(userData),
-        });
-        
-        const result = await response.json();
-        
-        if (!response.ok) {
-          console.error('API error:', result.error);
-          throw new Error(result.error);
-        }
-        
-        console.log('User profile created:', result.user);
-        alert('Account created successfully! Please check your email to confirm your account.');
-      } catch (apiError: any) {
-        console.error('API call exception:', apiError);
-        alert(`Error creating profile: ${apiError.message || 'Unknown error'}`);
+        console.log('Auth: User profile created successfully:', responseData);
+        alert(responseData.message || 'Account created successfully!');
       }
+      
+      // Redirect will be handled by the AuthProvider (onAuthStateChange)
     } catch (error: any) {
-      console.error('Caught error:', error);
-      alert(error.message);
+      console.error('Auth: Exception during sign-up process:', error);
+      if (error.message?.includes('422')) {
+        alert('This email is already registered. Please sign in instead.');
+      } else if (error.message?.includes('500')) {
+        alert('Server error occurred. Your account may have been created but profile setup failed. Please contact support.');
+      } else {
+        alert(error.message || 'An error occurred during sign up. Please try again.');
+      }
     } finally {
       setLoading(false);
     }
@@ -318,15 +601,34 @@ export default function Auth() {
                 
                 <div className="space-y-2">
                   <label htmlFor="schoolAddress" className="block text-sm font-medium text-gray-700 dark:text-gray-300">School Address</label>
-                  <input
-                    id="schoolAddress"
-                    type="text"
-                    value={schoolAddress}
-                    onChange={(e) => setSchoolAddress(e.target.value)}
-                    className="block w-full px-4 py-3 rounded-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
-                    placeholder="123 Education St"
-                    required={role === 'teacher'}
-                  />
+                  <div className="relative" ref={addressWrapperRef}>
+                    <input
+                      id="schoolAddress"
+                      type="text"
+                      value={schoolAddress}
+                      onChange={handleAddressChange}
+                      ref={addressInputRef}
+                      className="block w-full px-4 py-3 rounded-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
+                      placeholder="123 Education St"
+                      required={role === 'teacher'}
+                    />
+                    {/* API Status indicator for debugging */}
+                    <div className="mt-1 text-xs">
+                      <span className={`inline-block px-2 py-1 rounded ${(googleMapsLoaded && typeof window !== 'undefined' && !!window.google?.maps?.places) ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}`}>
+                        Places API: {(googleMapsLoaded && typeof window !== 'undefined' && !!window.google?.maps?.places) ? 'Loaded ✓' : 'Loading...'}
+                      </span>
+                      {googleMapsLoaded && (
+                        <span className={`ml-2 inline-block px-2 py-1 rounded ${placesInitialized ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}`}>
+                          Autocomplete: {placesInitialized ? 'Ready ✓' : 'Initializing...'}
+                        </span>
+                      )}
+                      {!googleMapsLoaded && (
+                        <div className="mt-1 text-xs text-red-600">
+                          If autocomplete doesn't work, make sure your API key has both the Google Maps JavaScript API and Places API enabled in the Google Cloud Console.
+                        </div>
+                      )}
+                    </div>
+                  </div>
                 </div>
                 
                 <div className="grid grid-cols-2 gap-4">
@@ -519,11 +821,13 @@ export default function Auth() {
         >
           {loading ? (
             <div className="flex items-center justify-center">
-              <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-              </svg>
-              Processing...
+              <div className="animate-spin mr-2 h-4 w-4 text-white">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+              </div>
+              {isSignUp ? 'Creating Account...' : 'Signing In...'}
             </div>
           ) : (
             isSignUp ? 'Create Account' : 'Sign In'

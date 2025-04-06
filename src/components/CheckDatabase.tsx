@@ -11,73 +11,112 @@ export default function CheckDatabase() {
   const [hasProjects, setHasProjects] = useState<boolean | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isExpanded, setIsExpanded] = useState(false);
+  const [isCheckingDatabase, setIsCheckingDatabase] = useState(true);
 
   useEffect(() => {
+    let isMounted = true;
+    let timeoutId: NodeJS.Timeout;
+
     const checkTables = async () => {
       try {
-        // Check users table
-        const { error: usersError } = await supabase
-          .from('users')
-          .select('id')
-          .limit(1);
-        
-        setHasUsers(!usersError);
-        if (usersError) {
-          console.error('Error checking users table:', usersError);
-          setError(usersError.message);
-        }
+        // Set a timeout to prevent blocking indefinitely
+        const timeoutPromise = new Promise<void>((_, reject) => {
+          timeoutId = setTimeout(() => {
+            reject(new Error('Database connection timed out after 5 seconds'));
+          }, 5000);
+        });
 
-        // Check donor_profiles table
-        const { error: donorsError } = await supabase
-          .from('donor_profiles')
-          .select('id')
-          .limit(1);
-        
-        setHasDonors(!donorsError);
-        if (donorsError) {
-          console.error('Error checking donor_profiles table:', donorsError);
-        }
+        // Check users table with a timeout
+        const checkUsersPromise = async () => {
+          const { error: usersError } = await supabase
+            .from('users')
+            .select('id')
+            .limit(1);
+          
+          if (isMounted) {
+            setHasUsers(!usersError);
+            if (usersError) {
+              console.error('Error checking users table:', usersError);
+              setError(usersError.message);
+            }
+          }
 
-        // Check teacher_profiles table
-        const { error: teachersError } = await supabase
-          .from('teacher_profiles')
-          .select('id')
-          .limit(1);
-        
-        setHasTeachers(!teachersError);
-        if (teachersError) {
-          console.error('Error checking teacher_profiles table:', teachersError);
-        }
+          // Check other tables
+          if (isMounted && !usersError) {
+            // Check donor_profiles table
+            const { error: donorsError } = await supabase
+              .from('donor_profiles')
+              .select('id')
+              .limit(1);
+            
+            setHasDonors(!donorsError);
+            
+            // Check teacher_profiles table
+            const { error: teachersError } = await supabase
+              .from('teacher_profiles')
+              .select('id')
+              .limit(1);
+            
+            setHasTeachers(!teachersError);
+            
+            // Check categories table
+            const { error: categoriesError } = await supabase
+              .from('categories')
+              .select('id')
+              .limit(1);
+            
+            setHasCategories(!categoriesError);
+            
+            // Check projects table
+            const { error: projectsError } = await supabase
+              .from('projects')
+              .select('id')
+              .limit(1);
+            
+            setHasProjects(!projectsError);
+          }
+        };
 
-        // Check categories table
-        const { error: categoriesError } = await supabase
-          .from('categories')
-          .select('id')
-          .limit(1);
-        
-        setHasCategories(!categoriesError);
-        if (categoriesError) {
-          console.error('Error checking categories table:', categoriesError);
-        }
-
-        // Check projects table
-        const { error: projectsError } = await supabase
-          .from('projects')
-          .select('id')
-          .limit(1);
-        
-        setHasProjects(!projectsError);
-        if (projectsError) {
-          console.error('Error checking projects table:', projectsError);
-        }
+        // Race between timeout and database check
+        await Promise.race([checkUsersPromise(), timeoutPromise]);
       } catch (err: any) {
-        console.error('Exception when checking database:', err);
-        setError(err.message);
+        if (isMounted) {
+          console.error('Exception when checking database:', err);
+          setError(err.message);
+          // Set all states to false on timeout
+          setHasUsers(false);
+          setHasDonors(false);
+          setHasTeachers(false);
+          setHasCategories(false);
+          setHasProjects(false);
+        }
+      } finally {
+        if (isMounted) {
+          setIsCheckingDatabase(false);
+          clearTimeout(timeoutId);
+        }
       }
     };
 
     checkTables();
+
+    return () => {
+      isMounted = false;
+      clearTimeout(timeoutId);
+    };
   }, []);
+
+  // If still checking, show a minimal loading indicator
+  if (isCheckingDatabase) {
+    return (
+      <div className="p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
+        <div className="flex items-center space-x-3">
+          <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-blue-600"></div>
+          <p className="text-sm text-gray-600 dark:text-gray-400">Checking database...</p>
+        </div>
+      </div>
+    );
+  }
 
   const allTablesExist = hasUsers && hasDonors && hasTeachers && hasCategories && hasProjects;
 
