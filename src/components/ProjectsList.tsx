@@ -20,9 +20,16 @@ type Project = {
 interface ProjectsListProps {
   searchQuery?: string;
   categoryFilter?: string;
+  featured?: boolean;
+  limit?: number;
 }
 
-export default function ProjectsList({ searchQuery = '', categoryFilter = 'all' }: ProjectsListProps) {
+export default function ProjectsList({ 
+  searchQuery = '', 
+  categoryFilter = 'all',
+  featured = false,
+  limit
+}: ProjectsListProps) {
   const [projects, setProjects] = useState<Project[]>([]);
   const [filteredProjects, setFilteredProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
@@ -45,7 +52,7 @@ export default function ProjectsList({ searchQuery = '', categoryFilter = 'all' 
     const fetchProjects = async () => {
       try {
         setLoading(true);
-        const { data, error } = await supabase
+        let query = supabase
           .from('projects')
           .select(`
             id, 
@@ -57,8 +64,22 @@ export default function ProjectsList({ searchQuery = '', categoryFilter = 'all' 
             main_image_url,
             status
           `)
-          .eq('status', 'active')
-          .order('created_at', { ascending: false });
+          .eq('status', 'active');
+          
+        // If featured is true, add additional filter or order logic
+        if (featured) {
+          // For this example, we'll just order by current_amount to show most funded projects first
+          query = query.order('current_amount', { ascending: false });
+        } else {
+          query = query.order('created_at', { ascending: false });
+        }
+
+        // Apply limit if specified
+        if (limit) {
+          query = query.limit(limit);
+        }
+
+        const { data, error } = await query;
 
         if (error) throw error;
         setProjects(data || []);
@@ -71,7 +92,7 @@ export default function ProjectsList({ searchQuery = '', categoryFilter = 'all' 
     };
 
     fetchProjects();
-  }, []);
+  }, [featured, limit]);
 
   // Filter projects when search query or category changes
   useEffect(() => {

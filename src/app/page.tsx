@@ -55,11 +55,14 @@ export default function Home() {
             <Link 
               href="/auth" 
               className="btn btn-lg !text-white bg-blue-800 bg-opacity-40 hover:bg-opacity-60 transition border border-white border-opacity-30 rounded-full flex items-center justify-center"
+              prefetch={true}
+              role="button"
+              aria-label="Sign in or create account"
             >
               <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
                 <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
               </svg>
-              CREATE ACCOUNT
+              SIGN IN / CREATE ACCOUNT
             </Link>
           </div>
         </div>
