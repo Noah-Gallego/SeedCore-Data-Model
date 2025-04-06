@@ -1,12 +1,16 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { supabase } from '../utils/supabase';
 
 export default function Auth() {
   const [loading, setLoading] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [passwordMatchError, setPasswordMatchError] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [isSignUp, setIsSignUp] = useState(false);
@@ -19,6 +23,59 @@ export default function Auth() {
   const [schoolState, setSchoolState] = useState('');
   const [schoolPostalCode, setSchoolPostalCode] = useState('');
   const [positionTitle, setPositionTitle] = useState('');
+
+  const [passwordStrength, setPasswordStrength] = useState(0);
+  
+  // Check if passwords match and update error state
+  const checkPasswordsMatch = (pass: string, confirmPass: string) => {
+    if (confirmPass && pass !== confirmPass) {
+      setPasswordMatchError('Passwords do not match');
+    } else {
+      setPasswordMatchError('');
+    }
+  };
+  
+  // Password strength checker
+  const checkPasswordStrength = (pass: string) => {
+    let score = 0;
+    
+    // If password is empty, return 0
+    if (!pass) {
+      setPasswordStrength(0);
+      return;
+    }
+    
+    // Length check
+    if (pass.length >= 8) score += 1;
+    if (pass.length >= 12) score += 1;
+    
+    // Complexity checks
+    if (/[A-Z]/.test(pass)) score += 1; // Has uppercase
+    if (/[a-z]/.test(pass)) score += 1; // Has lowercase
+    if (/[0-9]/.test(pass)) score += 1; // Has number
+    if (/[^A-Za-z0-9]/.test(pass)) score += 1; // Has special char
+    
+    // Normalize to 0-100
+    const normalizedScore = Math.min(Math.floor((score / 6) * 100), 100);
+    setPasswordStrength(normalizedScore);
+  };
+  
+  // Update the password onChange handler to validate in real-time
+  const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newPassword = e.target.value;
+    setPassword(newPassword);
+    checkPasswordStrength(newPassword);
+    if (confirmPassword) {
+      checkPasswordsMatch(newPassword, confirmPassword);
+    }
+  };
+  
+  // Update the confirmPassword onChange handler to validate in real-time
+  const handleConfirmPasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newConfirmPassword = e.target.value;
+    setConfirmPassword(newConfirmPassword);
+    checkPasswordsMatch(password, newConfirmPassword);
+  };
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -40,6 +97,15 @@ export default function Auth() {
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Validate password match
+    if (password !== confirmPassword) {
+      setPasswordMatchError('Passwords do not match');
+      return;
+    }
+    
+    // Clear any previous error
+    setPasswordMatchError('');
     
     // Validate teacher-specific fields if user is signing up as a teacher
     if (role === 'teacher') {
@@ -132,6 +198,23 @@ export default function Auth() {
     } finally {
       setLoading(false);
     }
+  };
+
+  // Add the toggle password functions
+  const togglePasswordVisibility = () => {
+    setShowPassword(!showPassword);
+  };
+  
+  const toggleConfirmPasswordVisibility = () => {
+    setShowConfirmPassword(!showConfirmPassword);
+  };
+
+  // Get color and label for password strength
+  const getPasswordStrengthInfo = () => {
+    if (passwordStrength === 0) return { color: 'bg-gray-200', label: '' };
+    if (passwordStrength < 33) return { color: 'bg-red-500', label: 'Weak' };
+    if (passwordStrength < 67) return { color: 'bg-yellow-500', label: 'Medium' };
+    return { color: 'bg-green-500', label: 'Strong' };
   };
 
   return (
@@ -322,16 +405,108 @@ export default function Auth() {
         
         <div className="space-y-2">
           <label htmlFor="password" className="block text-sm font-medium text-gray-700 dark:text-gray-300">Password</label>
-          <input
-            id="password"
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            className="block w-full px-4 py-3 rounded-lg bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
-            placeholder="••••••••"
-            required
-          />
+          <div className="relative">
+            <input
+              id="password"
+              type={showPassword ? "text" : "password"}
+              value={password}
+              onChange={handlePasswordChange}
+              className="block w-full px-4 py-3 rounded-lg bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
+              placeholder="••••••••"
+              required
+            />
+            <button
+              type="button"
+              className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-500 hover:text-gray-700 focus:outline-none"
+              onClick={togglePasswordVisibility}
+            >
+              {showPassword ? (
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M3.707 2.293a1 1 0 00-1.414 1.414l14 14a1 1 0 001.414-1.414l-1.473-1.473A10.014 10.014 0 0019.542 10C18.268 5.943 14.478 3 10 3a9.958 9.958 0 00-4.512 1.074l-1.78-1.781zm4.261 4.26l1.514 1.515a2.003 2.003 0 012.45 2.45l1.514 1.514a4 4 0 00-5.478-5.478z" clipRule="evenodd" />
+                  <path d="M12.454 16.697L9.75 13.992a4 4 0 01-3.742-3.741L2.335 6.578A9.98 9.98 0 00.458 10c1.274 4.057 5.065 7 9.542 7 .847 0 1.669-.105 2.454-.303z" />
+                </svg>
+              ) : (
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                  <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
+                  <path fillRule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clipRule="evenodd" />
+                </svg>
+              )}
+            </button>
+          </div>
+          
+          {isSignUp && password && (
+            <>
+              <div className="w-full bg-gray-200 rounded-full h-1.5 mt-1">
+                <div 
+                  className={`h-1.5 rounded-full ${getPasswordStrengthInfo().color}`} 
+                  style={{ width: `${passwordStrength}%` }}
+                ></div>
+              </div>
+              {getPasswordStrengthInfo().label && (
+                <p className="mt-1 text-xs text-gray-600 dark:text-gray-400">
+                  Password strength: <span className={`font-medium ${
+                    passwordStrength < 33 ? 'text-red-600' : 
+                    passwordStrength < 67 ? 'text-yellow-600' : 
+                    'text-green-600'
+                  }`}>{getPasswordStrengthInfo().label}</span>
+                </p>
+              )}
+              <ul className="text-xs text-gray-600 dark:text-gray-400 mt-1 space-y-1 list-disc list-inside">
+                <li className={password.length >= 8 ? "text-green-600" : "text-gray-500"}>
+                  At least 8 characters
+                </li>
+                <li className={/[A-Z]/.test(password) ? "text-green-600" : "text-gray-500"}>
+                  At least one uppercase letter
+                </li>
+                <li className={/[0-9]/.test(password) ? "text-green-600" : "text-gray-500"}>
+                  At least one number
+                </li>
+                <li className={/[^A-Za-z0-9]/.test(password) ? "text-green-600" : "text-gray-500"}>
+                  At least one special character
+                </li>
+              </ul>
+            </>
+          )}
         </div>
+        
+        {isSignUp && (
+          <div className="space-y-2">
+            <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 dark:text-gray-300">Confirm Password</label>
+            <div className="relative">
+              <input
+                id="confirmPassword"
+                type={showConfirmPassword ? "text" : "password"}
+                value={confirmPassword}
+                onChange={handleConfirmPasswordChange}
+                className={`block w-full px-4 py-3 rounded-lg bg-gray-50 dark:bg-gray-800 border ${passwordMatchError ? 'border-red-500' : confirmPassword && !passwordMatchError ? 'border-green-500' : 'border-gray-200 dark:border-gray-700'} text-gray-900 dark:text-gray-100 placeholder-gray-500 focus:outline-none focus:ring-2 ${passwordMatchError ? 'focus:ring-red-500' : confirmPassword && !passwordMatchError ? 'focus:ring-green-500' : 'focus:ring-blue-500'} focus:border-transparent transition-colors`}
+                placeholder="••••••••"
+                required
+              />
+              <button
+                type="button"
+                className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-500 hover:text-gray-700 focus:outline-none"
+                onClick={toggleConfirmPasswordVisibility}
+              >
+                {showConfirmPassword ? (
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                    <path fillRule="evenodd" d="M3.707 2.293a1 1 0 00-1.414 1.414l14 14a1 1 0 001.414-1.414l-1.473-1.473A10.014 10.014 0 0019.542 10C18.268 5.943 14.478 3 10 3a9.958 9.958 0 00-4.512 1.074l-1.78-1.781zm4.261 4.26l1.514 1.515a2.003 2.003 0 012.45 2.45l1.514 1.514a4 4 0 00-5.478-5.478z" clipRule="evenodd" />
+                    <path d="M12.454 16.697L9.75 13.992a4 4 0 01-3.742-3.741L2.335 6.578A9.98 9.98 0 00.458 10c1.274 4.057 5.065 7 9.542 7 .847 0 1.669-.105 2.454-.303z" />
+                  </svg>
+                ) : (
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                    <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
+                    <path fillRule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clipRule="evenodd" />
+                  </svg>
+                )}
+              </button>
+            </div>
+            {passwordMatchError ? (
+              <p className="mt-1 text-sm text-red-600">{passwordMatchError}</p>
+            ) : confirmPassword && (
+              <p className="mt-1 text-sm text-green-600">Passwords match</p>
+            )}
+          </div>
+        )}
         
         <button
           type="submit"
@@ -340,7 +515,7 @@ export default function Auth() {
               ? 'bg-blue-400 cursor-not-allowed'
               : 'bg-blue-600 hover:bg-blue-700'
           }`}
-          disabled={loading}
+          disabled={loading || (isSignUp && passwordMatchError !== '')}
         >
           {loading ? (
             <div className="flex items-center justify-center">
@@ -375,4 +550,4 @@ export default function Auth() {
       </div>
     </div>
   );
-} 
+}
