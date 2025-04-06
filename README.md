@@ -1,12 +1,25 @@
 # Beyond Measure
 
-Beyond Measure is a platform connecting teachers with donors to fund educational projects that go beyond standard classroom resources. This application allows teachers to create and manage funding projects, and donors to discover and support these initiatives.
+Beyond Measure is a faith-based crowdfunding platform connecting private Christian school teachers with passionate donors to fund educational projects. Our mission is to empower teachers to enhance classroom learning beyond standard resources, creating lasting positive impact in students' lives.
 
-## Features
+**Website:** [https://seed-core-data-model.vercel.app/](https://seed-core-data-model.vercel.app/)
+
+## Our Mission
+
+At Beyond Measure, we believe that every student deserves access to enriching educational experiences. We provide a space where:
+
+- Teachers can easily share their classroom needs and vision
+- Donors can support projects aligned with their values and interests
+- 100% of donations go directly to teachers with no platform fees
+- Christian education thrives through community support
+
+As reflected in our name, inspired by Psalm 147:5 - *"Great is our lord, and abundant in power; his understanding is beyond measure"*, we strive to facilitate educational opportunities that go beyond conventional limits.
+
+## Platform Features
 
 - **User Authentication**: Secure login for teachers, donors, and administrators
 - **Teacher Dashboard**: Create, edit, and manage educational funding projects
-- **Project Listings**: Browse available projects with filtering options
+- **Project Listings**: Browse available projects with filtering by subject areas
 - **Donation System**: Support projects with monetary contributions
 - **Admin Panel**: Verify teachers and approve projects
 
@@ -16,7 +29,7 @@ Beyond Measure is a platform connecting teachers with donors to fund educational
 - **Backend**: Supabase (PostgreSQL + Authentication)
 - **Deployment**: Vercel
 
-## Getting Started
+## Getting Started (Development)
 
 1. Clone the repository
 2. Install dependencies:
