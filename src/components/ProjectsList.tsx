@@ -15,6 +15,16 @@ type Project = {
   current_amount: number;
   main_image_url: string | null;
   status: string;
+  teacher?: {
+    id: string;
+    display_name: string;
+    profile_image_url?: string;
+    school?: {
+      name: string;
+      city: string;
+      state: string;
+    };
+  } | null;
 };
 
 interface ProjectsListProps {
@@ -62,7 +72,18 @@ export default function ProjectsList({
             funding_goal, 
             current_amount, 
             main_image_url,
-            status
+            status,
+            teacher_profiles:teacher_id(
+              id, 
+              user_id,
+              school_name, 
+              school_city, 
+              school_state,
+              users:user_id(
+                first_name,
+                last_name
+              )
+            )
           `)
           .eq('status', 'active');
           
@@ -82,8 +103,55 @@ export default function ProjectsList({
         const { data, error } = await query;
 
         if (error) throw error;
-        setProjects(data || []);
-        setFilteredProjects(data || []);
+        
+        // Transform the data to match our Project type
+        const formattedProjects = data?.map(project => {
+          // Handle teacher data
+          let teacherData = null;
+          if (project.teacher_profiles) {
+            const teacherProfile = Array.isArray(project.teacher_profiles) 
+              ? project.teacher_profiles[0] 
+              : project.teacher_profiles;
+              
+            if (teacherProfile) {
+              // Create display name from first and last name
+              let displayName = 'Teacher';
+              
+              if (teacherProfile.users) {
+                // Handle users as potentially an array or a single object
+                const userData = Array.isArray(teacherProfile.users) 
+                  ? teacherProfile.users[0] 
+                  : teacherProfile.users;
+                
+                if (userData) {
+                  const firstName = userData.first_name || '';
+                  const lastName = userData.last_name || '';
+                  if (firstName || lastName) {
+                    displayName = `${firstName} ${lastName}`.trim();
+                  }
+                }
+              }
+              
+              teacherData = {
+                id: teacherProfile.id,
+                display_name: displayName,
+                school: teacherProfile.school_name ? {
+                  name: teacherProfile.school_name,
+                  city: teacherProfile.school_city,
+                  state: teacherProfile.school_state
+                } : undefined
+              };
+            }
+          }
+          
+          return {
+            ...project,
+            teacher: teacherData
+          };
+        }) || [];
+        
+        setProjects(formattedProjects);
+        setFilteredProjects(formattedProjects);
       } catch (error: any) {
         console.error('Error fetching projects:', error.message);
       } finally {
@@ -166,10 +234,38 @@ export default function ProjectsList({
     ? "/images/project-placeholder-dark.svg"
     : "/images/project-placeholder.svg";
 
+  // Default avatar image to use when a teacher has no profile image
+  const defaultAvatarUrl = "/images/default-avatar.svg";
+
   // Handle image error by replacing with default image
   const handleImageError = (e: React.SyntheticEvent<HTMLImageElement, Event>) => {
     e.currentTarget.src = defaultImageUrl;
     e.currentTarget.onerror = null; // Prevent infinite loops
+  };
+
+  // Handle avatar image error by replacing with default avatar
+  const handleAvatarError = (e: React.SyntheticEvent<HTMLImageElement, Event>) => {
+    e.currentTarget.src = defaultAvatarUrl;
+    e.currentTarget.onerror = null; // Prevent infinite loops
+  };
+
+  // Function to get a deterministic color based on the teacher's name
+  const getAvatarColor = (name: string) => {
+    // List of background colors for the avatars
+    const colors = [
+      'bg-blue-500', 'bg-green-500', 'bg-purple-500', 
+      'bg-pink-500', 'bg-indigo-500', 'bg-red-500',
+      'bg-yellow-500', 'bg-teal-500', 'bg-orange-500'
+    ];
+    
+    // Use the sum of character codes to select a color
+    const charCodeSum = name.split('').reduce((sum, char) => sum + char.charCodeAt(0), 0);
+    return colors[charCodeSum % colors.length];
+  };
+
+  // Function to get the initial of teacher's name
+  const getInitial = (name: string) => {
+    return name && name.length > 0 ? name.charAt(0).toUpperCase() : 'T';
   };
 
   return (
@@ -188,6 +284,12 @@ export default function ProjectsList({
             />
             <div className="project-funding-badge">
               {Math.round((project.current_amount / project.funding_goal) * 100)}% Funded
+            </div>
+            {/* Always show Teacher Avatar on Image */}
+            <div className="absolute bottom-3 left-3 z-10">
+              <div className={`w-12 h-12 rounded-full overflow-hidden flex-shrink-0 border-2 border-white shadow-md flex items-center justify-center text-white font-medium text-xl ${getAvatarColor(project.teacher?.display_name || 'Teacher')}`}>
+                {getInitial(project.teacher?.display_name || 'Teacher')}
+              </div>
             </div>
           </div>
           
