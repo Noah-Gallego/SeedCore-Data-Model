@@ -1,58 +1,43 @@
-# Beyond Measure
+# SeedCore Data Model
 
-Beyond Measure is a faith-based crowdfunding platform connecting private Christian school teachers with passionate donors to fund educational projects. Our mission is to empower teachers to enhance classroom learning beyond standard resources, creating lasting positive impact in students' lives.
+A Next.js application for connecting private-school teachers with donors who fund classroom projects.
 
-**Website:** [https://seed-core-data-model.vercel.app/](https://seed-core-data-model.vercel.app/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-Next.js-3178C6?style=flat-square&logo=typescript&logoColor=white)](package.json)
 
-## Our Mission
+## Overview
 
-At Beyond Measure, we believe that every student deserves access to enriching educational experiences. We provide a space where:
+The application presents educational funding projects, supports authentication, and includes teacher, donor, and administrative workflows. The committed UI includes project browsing, project creation and editing, account pages, teacher pages, admin pages, and Supabase utilities.
 
-- Teachers can easily share their classroom needs and vision
-- Donors can support projects aligned with their values and interests
-- 100% of donations go directly to teachers with no platform fees
-- Christian education thrives through community support
+## Features and structure
 
-As reflected in our name, inspired by Psalm 147:5 - *"Great is our lord, and abundant in power; his understanding is beyond measure"*, we strive to facilitate educational opportunities that go beyond conventional limits.
+- `src/app/projects/` — project listing, detail, and creation routes
+- `src/app/teacher/` — teacher project workflows
+- `src/app/admin/` — administrative project and dashboard routes
+- `src/app/account/` — account and wishlist routes
+- `src/components/` — navigation, authentication, project, and status components
+- `public/` — classroom imagery, logos, and placeholder assets
 
-## Platform Features
+## Tech stack
 
-- **User Authentication**: Secure login for teachers, donors, and administrators
-- **Teacher Dashboard**: Create, edit, and manage educational funding projects
-- **Project Listings**: Browse available projects with filtering by subject areas
-- **Donation System**: Support projects with monetary contributions
-- **Admin Panel**: Verify teachers and approve projects
+Next.js 15, React 19, TypeScript, Tailwind CSS, Supabase authentication/database utilities, and the Google Maps loader package.
 
-## Technology Stack
+## Getting started
 
-- **Frontend**: Next.js 15, React 19, TailwindCSS
-- **Backend**: Supabase (PostgreSQL + Authentication)
-- **Deployment**: Vercel
+Install dependencies and start the development server from the repository root:
 
-## Getting Started (Development)
+```bash
+npm install
+npm run dev
+```
 
-1. Clone the repository
-2. Install dependencies:
-   ```bash
-   npm install
-   ```
-3. Set up environment variables in `.env.local`
-4. Run the development server:
-   ```bash
-   npm run dev
-   ```
-5. Open [http://localhost:3000](http://localhost:3000) to view the application
+Open `http://localhost:3000`. Supabase configuration is required for data-backed features; keep credentials in local environment configuration and do not commit them.
 
-## Project Structure
+The package also defines `npm run build` and `npm run start`. The configured `npm run lint` script is present in `package.json`, though its compatibility depends on the installed Next.js tooling.
 
-- `/src/app/*` - Next.js application routes
-- `/src/components/*` - Reusable React components
-- `/src/utils/*` - Utility functions including Supabase client
+## Status and limitations
 
-## Deployment
+The repository contains an active application codebase and committed classroom imagery, but no verified public demo is documented here. Database-backed behavior depends on external Supabase configuration and schema.
 
-This project is deployed on Vercel. Any push to the main branch triggers an automatic deployment.
+## License and attribution
 
-## License
-
-[MIT](LICENSE)
+No root `LICENSE` file is present in this checkout. Preserve the project's existing faith-based education context and any third-party asset attribution.
