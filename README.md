@@ -23,7 +23,14 @@ The application presents educational funding projects, supports authentication, 
 
 ## Tech stack
 
-Next.js 15, React 19, TypeScript, Tailwind CSS, Supabase authentication/database utilities, and the Google Maps loader package.
+Next.js 15, React 19, TypeScript, Tailwind CSS, and Supabase authentication/database utilities.
+
+### Important libraries
+
+- `@supabase/supabase-js` for Supabase access
+- `@googlemaps/js-api-loader` and `use-places-autocomplete` for place selection
+- `nodemailer` for email delivery
+- `react-error-boundary` for error handling
 
 ## Getting started
 
