@@ -4,6 +4,10 @@ A Next.js application for connecting private-school teachers with donors who fun
 
 [![TypeScript](https://img.shields.io/badge/TypeScript-Next.js-3178C6?style=flat-square&logo=typescript&logoColor=white)](package.json)
 
+<p align="center">
+  <img src="https://skillicons.dev/icons?i=typescript,nextjs,react,supabase&theme=light" alt="TypeScript, Next.js, React, and Supabase" />
+</p>
+
 ## Overview
 
 The application presents educational funding projects, supports authentication, and includes teacher, donor, and administrative workflows. The committed UI includes project browsing, project creation and editing, account pages, teacher pages, admin pages, and Supabase utilities.
