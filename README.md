@@ -12,6 +12,10 @@ A Next.js application for connecting private-school teachers with donors who fun
 
 The application presents educational funding projects, supports authentication, and includes teacher, donor, and administrative workflows. The committed UI includes project browsing, project creation and editing, account pages, teacher pages, admin pages, and Supabase utilities.
 
+## Media
+
+No application preview is included. The repository's classroom image assets are not a verified rendered application state, and the Next.js runtime was not available for a trustworthy local capture.
+
 ## Features and structure
 
 - `src/app/projects/` — project listing, detail, and creation routes
