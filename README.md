@@ -25,17 +25,6 @@ No application preview is included. The repository's classroom image assets are 
 - `src/components/` — navigation, authentication, project, and status components
 - `public/` — classroom imagery, logos, and placeholder assets
 
-## Tech stack
-
-Next.js 15, React 19, TypeScript, Tailwind CSS, and Supabase authentication/database utilities.
-
-### Important libraries
-
-- `@supabase/supabase-js` for Supabase access
-- `@googlemaps/js-api-loader` and `use-places-autocomplete` for place selection
-- `nodemailer` for email delivery
-- `react-error-boundary` for error handling
-
 ## Getting started
 
 Install dependencies and start the development server from the repository root:
