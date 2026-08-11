@@ -2,6 +2,10 @@
 
 A Next.js application for connecting private-school teachers with donors who fund classroom projects.
 
+> [!IMPORTANT]
+> Keep Supabase credentials in local environment configuration and verify the database schema before relying on data-backed workflows.
+
+
 [![TypeScript](https://img.shields.io/badge/TypeScript-Next.js-3178C6?style=flat-square&logo=typescript&logoColor=white)](package.json)
 
 <p align="center">
@@ -45,3 +49,14 @@ The repository contains an active application codebase and committed classroom i
 ## License and attribution
 
 No root `LICENSE` file is present in this checkout. Preserve the project's existing faith-based education context and any third-party asset attribution.
+
+## Application flow
+
+```mermaid
+flowchart LR
+    A[Next.js routes] --> B[Project browsing and editing]
+    A --> C[Teacher, donor, and admin pages]
+    B --> D[Supabase utilities and schema]
+    C --> D
+    D --> E[Data-backed application state]
+```
